@@ -1,0 +1,28 @@
+{
+  "name": "mongo-gsuite-shareddrive-backup",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=development node src/app.mjs",
+    "download-mongo": "wget -O mongotools.tgz https://fastdl.mongodb.org/tools/db/mongodb-database-tools-debian10-x86_64-100.3.1.tgz",
+    "get-binaries": "mkdir -p bin && rm -rf bin/* && wget -q -O- 'https://fastdl.mongodb.org/tools/db/mongodb-database-tools-debian10-x86_64-100.3.1.tgz' | tar -xz -C 'bin' --strip-components=2 mongodb-database-tools-debian10-x86_64-100.3.1/bin/",
+    "start": "node src/app.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vase/mongo-gsuite-shareddrive-backup.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vase/mongo-gsuite-shareddrive-backup/issues"
+  },
+  "homepage": "https://github.com/vase/mongo-gsuite-shareddrive-backup#readme",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "dotenv": "^9.0.0",
+    "googleapis": "^73.0.0"
+  }
+}
