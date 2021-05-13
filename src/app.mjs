@@ -36,7 +36,7 @@ const bree = new Bree({
   root: false,
   jobs: Object.keys(hosts).map(key => ({
     name: `Dump ${key} job`,
-    cron: `${minutePoint[key]} ${(10 + hourOffset)%24},${(22 + hourOffset)%24} * * *`,
+    cron: `${minutePoint[key]} ${(12 + hourOffset)%24},${(22 + hourOffset)%24} * * *`,
     worker: {
       workerData: {
         key,
