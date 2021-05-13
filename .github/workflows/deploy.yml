@@ -1,0 +1,26 @@
+name: Fly Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_IO_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set env to staging
+        if: github.ref == 'refs/heads/develop'
+        run: |
+          echo "FLY_APP=mongo-gsuite-backup-staging" >> $GITHUB_ENV
+      - name: Set env to production
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "FLY_APP=mongo-gsuite-backup-production" >> $GITHUB_ENV
+      - uses: superfly/flyctl-actions@1.1
+        with:
+          args: "deploy --detach"
