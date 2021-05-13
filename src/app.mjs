@@ -22,12 +22,13 @@ const hosts = (await axios.get(process.env.MONGO_HOST_API)).data
 const minutePoint = {}
 let currentMinute = 0
 
+console.log("Jobs scheduled:")
 for (let key of Object.keys(hosts)) {
   minutePoint[key] = currentMinute
+  console.log(`${key}: at ${currentMinute} past the hour`)
   currentMinute += 10
 }
 
-console.log(minutePoint)
 // Get current timezone offset
 const hourOffset = DateTime.now().offset / 60
 
