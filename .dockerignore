@@ -1,0 +1,5 @@
+bin
+creds
+.env
+node_modules
+.git

@@ -1,29 +1,7 @@
-import { google } from "googleapis";
-import { spawn } from "child_process";
 import axios from "axios";
+import Bree from "bree";
+import { gdrive, DateTime } from "./utils.mjs";
 if (process.env.NODE_ENV !== "production") (await import("dotenv")).config()
-const credentials = (process.env.NODE_ENV !== "production") ? (await import("../creds/index.mjs")).default : JSON.parse(process.env.SERVICE_ACCOUNT_CREDENTIALS)
-google.options({ http2: true })
-const gdrive = google.drive({ version: "v3", auth: await google.auth.getClient({ credentials, scopes: ["https://www.googleapis.com/auth/drive"] })})
-
-// Create local Date function
-function toIsoString(date) {
-  var tzo = -date.getTimezoneOffset(),
-      dif = tzo >= 0 ? '+' : '-',
-      pad = function(num) {
-          var norm = Math.floor(Math.abs(num));
-          return (norm < 10 ? '0' : '') + norm;
-      };
-
-  return date.getFullYear() +
-      '-' + pad(date.getMonth() + 1) +
-      '-' + pad(date.getDate()) +
-      'T' + pad(date.getHours()) +
-      ':' + pad(date.getMinutes()) +
-      ':' + pad(date.getSeconds()) +
-      dif + pad(tzo / 60) +
-      ':' + pad(tzo % 60);
-}
 
 // Get Shared Drive Id
 const driveId = (await gdrive.drives.list()).data.drives.filter(e => e.name === process.env.SHARED_DRIVE_NAME).map(e => e.id)[0]
@@ -37,29 +15,75 @@ const folderId = (await gdrive.files.list({
   q: `name = '${process.env.TARGET_FOLDER_NAME}' and mimeType = 'application/vnd.google-apps.folder'`
 })).data.files[0].id
 
+// Get hosts to backup (we don't update periodically, we assume if we add a new host, we restart instead)
 const hosts = (await axios.get(process.env.MONGO_HOST_API)).data
 
-for (let key of Object.keys(hosts)) {
-  console.log(`Dumping ${key}`)
-  const dump = spawn("bin/mongodump", [`--uri="${hosts[key]}"`, "--archive", "--gzip", "--oplog"])
-  dump.stderr.on("data", data => console.log(`Mongo Output: ${data}`))
+// Space out dumps to prevent over-hitting API (Hard-coding 10 minute space between)
+const minutePoint = {}
+let currentMinute = 0
 
-  // Pipe dump
-  await gdrive.files.create({
-    supportsAllDrives: true,
-    requestBody: {
-      name: `${toIsoString(new Date()).split("T")[0]}-${hosts[key].split("@")[1].split("/?")[0]}.mongoarchive.gz`,
-      parents: [folderId],
-      properties: {
-        "vase.backupTime": (new Date()).toISOString(),
-        "vase.hostMongo": hosts[key].split("@")[1].split("/?")[0]
-      },
-    },
-    media: {
-      mimeType: "application/gzip",
-      body: dump.stdout
-    }
-  }, {
-    onUploadProgress: evt => console.log(`Upload Progress: ${evt.bytesRead / 1048576}MB`)
-  })
+console.log("Jobs scheduled:")
+for (let key of Object.keys(hosts)) {
+  minutePoint[key] = currentMinute
+  console.log(`${key}: at ${currentMinute} past the hour`)
+  currentMinute += 10
 }
+
+// Get current timezone offset
+const hourOffset = DateTime.now().offset / 60
+
+const bree = new Bree({
+  root: false,
+  jobs: Object.keys(hosts).map(key => ({
+    name: `Dump ${key} job`,
+    cron: `${minutePoint[key]} ${(10 + hourOffset)%24},${(22 + hourOffset)%24} * * *`,
+    worker: {
+      workerData: {
+        key,
+        host: hosts[key],
+        folderId
+      }
+    },
+    path: async () => {
+      const { spawn } = await import("child_process");
+      const { parentPort, workerData } = await import("worker_threads");
+      const { gdrive, DateTime } = await import("./src/utils.mjs");
+      const { key, host, folderId } = workerData
+    
+      if (parentPort) parentPort.once('message', message => { if (message === 'cancel') process.exit(0)})
+      
+      console.time(key)
+      console.log(`${key} mongodump started...`)
+      const dump = spawn("bin/mongodump", [`--uri="${host}"`, "--archive", "--gzip", "--oplog"])
+      dump.stderr.on("data", data => (process.env.NODE_ENV !== "production") ? console.log(`${key} mongodump Output: ${data}`) : null)
+      
+      const currentDateTimeString = DateTime.now().setZone("Asia/Kuala_Lumpur").toISO()
+
+      // Pipe dump
+      const driveResponse = await gdrive.files.create({
+        supportsAllDrives: true,
+        requestBody: {
+          name: `${currentDateTimeString.split(":")[0]}-${host.split("@")[1].split("/?")[0]}.mongoarchive.gz`,
+          parents: [folderId],
+          properties: {
+            "vase.backupTimestamp": currentDateTimeString,
+            "vase.hostMongo": host.split("@")[1].split("/?")[0],
+            "vase.env": process.env.NODE_ENV
+          },
+        },
+        media: {
+          mimeType: "application/gzip",
+          body: dump.stdout
+        }
+      }, {
+        maxRedirects: 0,
+        // onUploadProgress: evt => console.log(`Upload Progress: ${evt.bytesRead / 1048576}MB`)
+      })
+      console.timeEnd(key)
+      process.exit(0)
+    }
+  }))
+})
+
+bree.start()
+console.log("====== BOOT COMPLETE ======")
