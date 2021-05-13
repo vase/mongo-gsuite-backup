@@ -85,3 +85,4 @@ const bree = new Bree({
 })
 
 bree.start()
+console.log("====== BOOT COMPLETE ======")
