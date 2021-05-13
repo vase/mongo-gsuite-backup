@@ -20,7 +20,7 @@ const hosts = (await axios.get(process.env.MONGO_HOST_API)).data
 
 // Space out dumps to prevent over-hitting API (Hard-coding 10 minute space between)
 const minutePoint = {}
-let currentMinute = 15
+let currentMinute = 0
 
 for (let key of Object.keys(hosts)) {
   minutePoint[key] = currentMinute
@@ -28,7 +28,6 @@ for (let key of Object.keys(hosts)) {
 }
 
 console.log(minutePoint)
-
 // Get current timezone offset
 const hourOffset = DateTime.now().offset / 60
 
