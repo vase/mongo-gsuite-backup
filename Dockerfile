@@ -13,6 +13,7 @@ RUN npm run get-binaries
 FROM node:16-slim as app
 
 ARG NODE_ENV=production
+WORKDIR /app
 USER node
 
 COPY --from=builder /app /app
