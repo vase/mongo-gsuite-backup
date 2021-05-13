@@ -21,10 +21,12 @@
   },
   "homepage": "https://github.com/vase/mongo-gsuite-shareddrive-backup#readme",
   "dependencies": {
+    "@breejs/later": "^4.0.2",
     "axios": "^0.21.1",
     "bree": "^6.2.0",
     "dotenv": "^9.0.0",
     "googleapis": "^73.0.0",
-    "luxon": "^1.26.0"
+    "luxon": "^1.26.0",
+    "prettycron": "^0.10.0"
   }
 }
