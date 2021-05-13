@@ -28,6 +28,7 @@ const minuteOffset = DateTime.now().offset - ( 8 * 60 )
 const bree = new Bree({
   root: false,
   jobs: Object.keys(hosts).map(key => {
+    console.log(hosts[key])
     const { schedule, mongouri } = hosts[key]
     const { schedules } = later.parse.text(schedule)
     let days = new Set()
