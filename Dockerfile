@@ -10,12 +10,12 @@ USER node
 RUN npm ci && npm cache clean --force --loglevel=error
 RUN npm run get-binaries
 
-FROM node:16-slim as app
+# FROM node:16-slim as app
 
-ARG NODE_ENV=production
-WORKDIR /app
-USER node
+# ARG NODE_ENV=production
+# WORKDIR /app
+# USER node
 
-COPY --from=builder /app /app
+# COPY --from=builder /app /app
 
 CMD ["npm", "start"]
