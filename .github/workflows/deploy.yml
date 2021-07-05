@@ -67,13 +67,14 @@ jobs:
 
             services:
               mongo-gsuite-backup-${{ env.SERVICE_STAGE }}:
-                image: vase/mongo-gsuite-backup:${{ steps.vars.outputs.sha_short }}
+                image: vase/mongo-gsuite-backup:sha-${{ steps.vars.outputs.sha_short }}
                 environment:
                   INFRA: "swarm"
                   NODE_ENV: "${{ env.SERVICE_STAGE }}"
                 deploy:
                   replicas: 1
-                  restart_policy: on-failure
+                  restart_policy:
+                    condition: on-failure
                 secrets:
                   - MONGO_HOST_API
                   - SHARED_DRIVE_NAME
