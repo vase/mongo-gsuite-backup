@@ -3,11 +3,12 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "NODE_ENV=development node src/app.mjs",
     "download-mongo": "wget -O mongotools.tgz https://fastdl.mongodb.org/tools/db/mongodb-database-tools-debian10-x86_64-100.3.1.tgz",
     "get-binaries": "mkdir -p bin && rm -rf bin/* && wget -q -O- 'https://fastdl.mongodb.org/tools/db/mongodb-database-tools-debian10-x86_64-100.3.1.tgz' | tar -xz -C 'bin' --strip-components=2 mongodb-database-tools-debian10-x86_64-100.3.1/bin/",
-    "start": "node src/app.mjs"
+    "start": "node src/app.js"
   },
   "repository": {
     "type": "git",
@@ -24,7 +25,6 @@
     "@breejs/later": "^4.0.2",
     "axios": "^0.21.1",
     "bree": "^6.2.0",
-    "dotenv": "^9.0.0",
     "googleapis": "^73.0.0",
     "luxon": "^1.26.0",
     "prettycron": "^0.10.0"
