@@ -26,7 +26,6 @@ if (process.env.INFRA === "swarm") {
   }
 }
 
-console.log(processEnvs)
 const credentials = JSON.parse(processEnvs.SERVICE_ACCOUNT_CREDENTIALS)
 export const gdrive = google.drive({ version: "v3", auth: await google.auth.getClient({ credentials, scopes: ["https://www.googleapis.com/auth/drive"] })})
 export function mod(n, m) {
@@ -36,19 +35,14 @@ export function mod(n, m) {
 // Get Shared Drive Id
 const driveId = (await gdrive.drives.list()).data.drives.filter(e => e.name === processEnvs.SHARED_DRIVE_NAME).map(e => e.id)[0]
 
-let folderId
 // Get Mongo Backup Folder ID
-try {
-  folderId = (await gdrive.files.list({
+const folderId = (await gdrive.files.list({
     driveId,
     corpora: "drive",
     supportsAllDrives: true,
     includeItemsFromAllDrives: true,
     q: `name = '${processEnvs.TARGET_FOLDER_NAME}' and mimeType = 'application/vnd.google-apps.folder'`
   })).data.files[0].id
-} catch(err) {
-  console.log(driveId)
-}
 
 // Get hosts to backup (we don't update periodically, we assume if we add a new host, we restart instead)
 const hosts = (await axios.get(processEnvs.MONGO_HOST_API)).data
