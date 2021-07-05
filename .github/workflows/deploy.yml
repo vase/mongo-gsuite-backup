@@ -1,4 +1,4 @@
-name: Fly Deploy
+name: Deploy
 
 on:
   push:
@@ -7,20 +7,91 @@ on:
       - develop
 
 jobs:
-  deploy:
+  push_to_registry:
+    name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
-    env:
-      FLY_API_TOKEN: ${{ secrets.FLY_IO_ACCESS_TOKEN }}
     steps:
-      - uses: actions/checkout@v2
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Declare some variables
+        id: vars
+        shell: bash
+        run: |
+          echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
       - name: Set env to staging
-        if: github.ref == 'refs/heads/develop'
+        if: endsWith(github.ref, '/develop')
         run: |
-          echo "FLY_APP=mongo-gsuite-backup-staging" >> $GITHUB_ENV
+          echo "SERVICE_STAGE=staging" >> $GITHUB_ENV
       - name: Set env to production
-        if: github.ref == 'refs/heads/main'
+        if: endsWith(github.ref, '/main')
         run: |
-          echo "FLY_APP=mongo-gsuite-backup-production" >> $GITHUB_ENV
-      - uses: superfly/flyctl-actions@1.1
+          echo "SERVICE_STAGE=production" >> $GITHUB_ENV
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v3
         with:
-          args: "deploy --detach"
+          # list of Docker images to use as base name for tags
+          images: |
+            vase/mongo-gsuite-backup
+          # generate Docker tags based on the following events/attributes
+          tags: |
+            type=ref,event=branch
+            type=sha
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login to DockerHub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Push to Docker Hub
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+      - name: Deploy stack to Portainer
+        uses: asyrique/portainer-stack-deploy@master
+        with:
+          serverurl: http://52.221.199.194:9000
+          username: ${{ secrets.PORTAINER_USERNAME }}
+          password: ${{ secrets.PORTAINER_PASSWORD }}
+          endpointId: 2
+          stackname: mongo-gsuite-backup-${{ env.SERVICE_STAGE }}
+          swarmId: 1kl3uy2wpdh0wmr3h6tyztl4e
+          imagename: vase/mongo-gsuite-backup:sha-${{ steps.vars.outputs.sha_short }}
+          docker_compose: |
+            version: "3.8"
+
+            services:
+              mongo-gsuite-backup-${{ env.SERVICE_STAGE }}:
+                image: vase/mongo-gsuite-backup:sha-${{ steps.vars.outputs.sha_short }}
+                environment:
+                  INFRA: "swarm"
+                  NODE_ENV: "${{ env.SERVICE_STAGE }}"
+                deploy:
+                  replicas: 1
+                  restart_policy:
+                    condition: on-failure
+                secrets:
+                  - MONGO_HOST_API
+                  - SHARED_DRIVE_NAME
+                  - TARGET_FOLDER_NAME
+                  - SERVICE_ACCOUNT_CREDENTIALS
+
+            secrets:
+              MONGO_HOST_API:
+                external: true
+                name: mongo-gsuite-backup.${{ env.SERVICE_STAGE }}.MONGO_HOST_API
+              SHARED_DRIVE_NAME:
+                external: true
+                name:  mongo-gsuite-backup.${{ env.SERVICE_STAGE }}.SHARED_DRIVE_NAME
+              TARGET_FOLDER_NAME:
+                external: true
+                name:  mongo-gsuite-backup.${{ env.SERVICE_STAGE }}.TARGET_FOLDER_NAME
+              SERVICE_ACCOUNT_CREDENTIALS:
+                external: true
+                name:  mongo-gsuite-backup.${{ env.SERVICE_STAGE }}.SERVICE_ACCOUNT_CREDENTIALS
