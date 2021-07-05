@@ -17,9 +17,8 @@ const processEnvs = {
 
 // populate with either docker secrets or envs
 if (process.env.INFRA === "swarm") {
-  console.log(await readdir("/run/secrets"))
   for (let env of Object.keys(processEnvs)) {
-    processEnvs[env] = await readFile(`/run/secrets/${env}`)
+    processEnvs[env] = await readFile(`/run/secrets/${env}`, "utf-8")
   }
 } else if (process.env.INFRA === "fly") {
   for (let env of Object.keys(processEnvs)) {
