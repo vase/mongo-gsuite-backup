@@ -14,6 +14,7 @@ const processEnvs = {
   TARGET_FOLDER_NAME: null
 }
 
+
 // populate with either docker secrets or envs
 if (process.env.INFRA === "swarm") {
   console.log(await readdir("/run/secrets"))
@@ -34,7 +35,7 @@ export function mod(n, m) {
 
 // Get Shared Drive Id
 const driveId = (await gdrive.drives.list()).data.drives.filter(e => e.name === processEnvs.SHARED_DRIVE_NAME).map(e => e.id)[0]
-
+console.log(driveId)
 // Get Mongo Backup Folder ID
 const folderId = (await gdrive.files.list({
   driveId,
