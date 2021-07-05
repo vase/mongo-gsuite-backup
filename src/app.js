@@ -26,6 +26,7 @@ if (process.env.INFRA === "swarm") {
   }
 }
 
+console.log(processEnvs)
 const credentials = JSON.parse(processEnvs.SERVICE_ACCOUNT_CREDENTIALS)
 export const gdrive = google.drive({ version: "v3", auth: await google.auth.getClient({ credentials, scopes: ["https://www.googleapis.com/auth/drive"] })})
 export function mod(n, m) {
