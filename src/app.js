@@ -4,7 +4,7 @@ import later from "@breejs/later"
 import prettyCron from "prettycron"
 import { google } from "googleapis";
 import { DateTime } from "luxon"
-import { readFile } from "fs/promises"
+import { readFile, readdir } from "fs/promises"
 
 // Create base env var object
 const processEnvs = {
@@ -16,6 +16,7 @@ const processEnvs = {
 
 // populate with either docker secrets or envs
 if (process.env.INFRA === "swarm") {
+  console.log(await readdir("/run/secrets"))
   for (let env of Object.keys(processEnvs)) {
     processEnvs[env] = await readFile(`/run/secrets/${env}`)
   }
