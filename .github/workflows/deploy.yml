@@ -59,6 +59,7 @@ jobs:
           serverurl: http://52.221.199.194:9000
           username: ${{ secrets.PORTAINER_USERNAME }}
           password: ${{ secrets.PORTAINER_PASSWORD }}
+          endpointId: 2
           stackname: mongo-gsuite-backup
           imagename: vase/mongo-gsuite-backup:${{ steps.vars.outputs.sha_short }}
           docker_compose: |
