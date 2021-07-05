@@ -2,7 +2,7 @@ import axios from "axios";
 import Bree from "bree";
 import later from "@breejs/later"
 import prettyCron from "prettycron"
-import { processEnvs, gdrive, DateTime, mod } from "./util.js";
+import { processEnvs, gdrive, DateTime, mod } from "./utils.js";
 
 // Get Shared Drive Id
 const driveId = (await gdrive.drives.list()).data.drives.filter(e => e.name === processEnvs.SHARED_DRIVE_NAME).map(e => e.id)[0]
