@@ -56,7 +56,7 @@ jobs:
       - name: Deploy stack to Portainer
         uses: asyrique/portainer-stack-deploy@master
         with:
-          serverurl: http://52.221.199.194:9000
+          serverurl: http://13.229.66.104:9000
           username: ${{ secrets.PORTAINER_USERNAME }}
           password: ${{ secrets.PORTAINER_PASSWORD }}
           endpointId: 2
