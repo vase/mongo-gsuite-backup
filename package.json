@@ -1,26 +1,26 @@
 {
-  "name": "mongo-gsuite-shareddrive-backup",
+  "name": "mongo-gsuite-backup",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "type": "module",
   "scripts": {
     "test": "NODE_ENV=development node src/app.mjs",
-    "download-mongo": "wget -O mongotools.tgz https://fastdl.mongodb.org/tools/db/mongodb-database-tools-debian10-x86_64-100.5.2.tgz",
-    "get-binaries": "mkdir -p bin && rm -rf bin/* && wget -q -O- 'https://fastdl.mongodb.org/tools/db/mongodb-database-tools-debian10-x86_64-100.5.2.tgz' | tar -xz -C 'bin' --strip-components=2 mongodb-database-tools-debian10-x86_64-100.5.2/bin/",
+    "download-mongo": "wget -O mongotools.tgz https://fastdl.mongodb.org/tools/db/mongodb-database-tools-debian10-x86_64-100.7.0.tgz",
+    "get-binaries": "mkdir -p bin && rm -rf bin/* && wget -q -O- 'https://fastdl.mongodb.org/tools/db/mongodb-database-tools-debian10-x86_64-100.7.0.tgz' | tar -xz -C 'bin' --strip-components=2 mongodb-database-tools-debian10-x86_64-100.7.0/bin/",
     "start": "node src/app.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vase/mongo-gsuite-shareddrive-backup.git"
+    "url": "git+https://github.com/vase/mongo-gsuite-backup.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/vase/mongo-gsuite-shareddrive-backup/issues"
+    "url": "https://github.com/vase/mongo-gsuite-backup/issues"
   },
-  "homepage": "https://github.com/vase/mongo-gsuite-shareddrive-backup#readme",
+  "homepage": "https://github.com/vase/mongo-gsuite-backup#readme",
   "dependencies": {
     "@breejs/later": "^4.0.2",
     "axios": "^0.21.1",
