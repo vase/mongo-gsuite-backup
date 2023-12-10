@@ -105,3 +105,4 @@ dist
 
 bin
 creds
+.DS_Store
