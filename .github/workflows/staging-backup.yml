@@ -9,6 +9,7 @@ jobs:
   backup:
     name: Backup MongoDB to GSuite
     runs-on: ubuntu-latest
+    environment: staging
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
@@ -21,6 +22,7 @@ jobs:
         uses: AnimMouse/setup-rclone@v1
         with:
           rclone_config: ${{ vars.RCLONE_CONFIG }}
+          disable_base64: true
       - name: Add Rclone service account file
         uses: AnimMouse/setup-rclone/service-account-file@v1
         with:
