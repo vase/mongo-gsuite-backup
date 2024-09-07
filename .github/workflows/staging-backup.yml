@@ -1,0 +1,30 @@
+name: Staging Mongo Backup
+
+on:
+  workflow_dispatch:
+  # schedule:
+  #   - cron: '23 7/12 * * *'
+
+jobs:
+  backup:
+    name: Backup MongoDB to GSuite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      - name: Setup mongodb-tools
+        run: |
+          wget https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2204-x86_64-100.10.0.deb
+          sudo apt install ./mongodb-database-tools-*-100.10.0.deb
+          mongodump --version
+      - name: Setup Rclone
+        uses: AnimMouse/setup-rclone@v1
+        with:
+          rclone_config: ${{ vars.RCLONE_CONFIG }}
+      - name: Add Rclone service account file
+        uses: AnimMouse/setup-rclone/service-account-file@v1
+        with:
+          service_account_filename: service-account-file.json
+          service_account_file: ${{ secrets.SERVICE_ACCOUNT_FILE_802242FDC2C47926869E5B2E96742D38B66A392C }}
+      - run: |
+          rclone lsd engineeringbackup:
